@@ -1,0 +1,44 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "happy-deals-3f03d",
+          "appId": "1:289031542511:android:54b88775765ba71a8b6d1a",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "happy-deals-3f03d",
+          "appId": "1:289031542511:ios:75633c50745ea4c48b6d1a",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "macos": {
+        "default": {
+          "projectId": "happy-deals-3f03d",
+          "appId": "1:289031542511:ios:75633c50745ea4c48b6d1a",
+          "uploadDebugSymbols": false,
+          "fileOutput": "macos/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "happy-deals-3f03d",
+          "configurations": {
+            "android": "1:289031542511:android:54b88775765ba71a8b6d1a",
+            "ios": "1:289031542511:ios:75633c50745ea4c48b6d1a",
+            "macos": "1:289031542511:ios:75633c50745ea4c48b6d1a",
+            "web": "1:289031542511:web:d654b9d43d11d2f98b6d1a",
+            "windows": "1:289031542511:web:d2b308bcbff053af8b6d1a"
+          }
+        }
+      }
+    }
+  },
+  "emulators": {
+    "singleProjectMode": true
+  }
+}

@@ -251,6 +251,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
       try {
         final List<String> imageUrls = await _uploadImages();
+
+        // Création du produit
         final product = Product(
           id: widget.product?.id ?? '',
           name: _nameController.text,
@@ -266,6 +268,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           stripePriceId: widget.product?.stripePriceId ?? '',
         );
 
+        // Utiliser le ProductService pour créer ou mettre à jour le produit
         if (widget.product == null) {
           await _productService.createProduct(product);
         } else {

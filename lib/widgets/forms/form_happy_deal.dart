@@ -347,6 +347,7 @@ class _HappyDealFormState extends State<HappyDealForm> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       try {
+        // Créer le Happy Deal
         final happyDeal = HappyDeal(
           id: widget.happyDeal?.id ??
               FirebaseFirestore.instance.collection('posts').doc().id,
@@ -364,33 +365,62 @@ class _HappyDealFormState extends State<HappyDealForm> {
           startDate: _startDate,
           endDate: _endDate,
           companyId: FirebaseAuth.instance.currentUser!.uid,
-          photo:
-              _selectedProductImageUrl, // Utilisez l'URL de l'image du produit sélectionné
+          photo: _selectedProductImageUrl,
           newPrice: num.parse(_newPriceController.text),
           oldPrice: num.parse(_currentPriceController.text),
         );
 
-        if (isEditing) {
-          await FirebaseFirestore.instance
+        // Créer une transaction Firestore pour assurer la cohérence des données
+        await FirebaseFirestore.instance.runTransaction((transaction) async {
+          // 1. Mettre à jour ou créer le Happy Deal
+          if (isEditing) {
+            transaction.update(
+              FirebaseFirestore.instance.collection('posts').doc(happyDeal.id),
+              happyDeal.toEditableMap(),
+            );
+          } else {
+            transaction.set(
+              FirebaseFirestore.instance.collection('posts').doc(happyDeal.id),
+              happyDeal.toMap(),
+            );
+          }
+
+          // 2. Mettre à jour le produit
+          final productRef = FirebaseFirestore.instance
+              .collection('products')
+              .doc(_selectedProductId);
+
+          transaction.update(productRef, {
+            'hasActiveHappyDeal': true,
+            'discountedPrice': happyDeal.newPrice,
+            'discountPercentage': happyDeal.discountPercentage,
+            'happyDealStartDate': Timestamp.fromDate(happyDeal.startDate),
+            'happyDealEndDate': Timestamp.fromDate(happyDeal.endDate),
+          });
+
+          // 3. Mettre à jour le post du produit
+          final productPostQuery = await FirebaseFirestore.instance
               .collection('posts')
-              .doc(happyDeal.id)
-              .update(happyDeal.toEditableMap());
-        } else {
-          await FirebaseFirestore.instance
-              .collection('posts')
-              .doc(happyDeal.id)
-              .set(happyDeal.toMap());
-        }
-        // Mise à jour du produit
-        await FirebaseFirestore.instance
-            .collection('products')
-            .doc(_selectedProductId)
-            .update({
-          'hasActiveHappyDeal': true,
-          'discountedPrice': happyDeal.newPrice,
-          'discountPercentage': happyDeal.discountPercentage,
-          'happyDealStartDate': Timestamp.fromDate(happyDeal.startDate),
-          'happyDealEndDate': Timestamp.fromDate(happyDeal.endDate),
+              .where('type', isEqualTo: 'product')
+              .where('productId', isEqualTo: _selectedProductId)
+              .limit(1)
+              .get();
+
+          if (productPostQuery.docs.isNotEmpty) {
+            transaction.update(
+              FirebaseFirestore.instance
+                  .collection('posts')
+                  .doc(productPostQuery.docs.first.id),
+              {
+                'price': happyDeal.oldPrice,
+                'hasActiveHappyDeal': true,
+                'discountedPrice': happyDeal.newPrice,
+                'discountPercentage': happyDeal.discountPercentage,
+                'timestamp': FieldValue
+                    .serverTimestamp(), // Optionnel: fait remonter le post
+              },
+            );
+          }
         });
 
         toastification.show(

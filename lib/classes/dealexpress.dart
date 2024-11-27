@@ -11,6 +11,8 @@ class ExpressDeal extends Post {
   final int basketCount;
   final int price;
   final String stripeAccountId;
+  final String stripeProductId;
+  final String stripePriceId;
 
   ExpressDeal({
     required this.id,
@@ -28,6 +30,8 @@ class ExpressDeal extends Post {
     super.likedBy,
     super.commentsCount,
     super.comments,
+    required this.stripeProductId,
+    required this.stripePriceId,
   }) : super(
           type: 'express_deal',
         );
@@ -41,6 +45,8 @@ class ExpressDeal extends Post {
       searchText: data['searchText'],
       content: data['content'],
       companyId: data['companyId'],
+      stripePriceId: data['stripePriceId'] ?? "",
+      stripeProductId: data['stripeProductId'] ?? "",
       basketCount: data['basketCount'],
       price: data['price'],
       stripeAccountId: data['stripeAccountId'] ?? '',
@@ -72,6 +78,8 @@ class ExpressDeal extends Post {
       'basketCount': basketCount,
       'price': price,
       'stripeAccountId': stripeAccountId,
+      'stripePriceId': stripePriceId,
+      'stripeProductId': stripeProductId,
     });
     return map;
   }
@@ -86,6 +94,8 @@ class ExpressDeal extends Post {
       'basketCount': basketCount,
       'price': price,
       'stripeAccountId': stripeAccountId,
+      'stripeProductId': stripeProductId,
+      'stripePriceId': stripePriceId,
     };
   }
 }

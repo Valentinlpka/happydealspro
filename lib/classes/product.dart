@@ -96,6 +96,7 @@ class Product {
   }
 
   Product copyWith({
+    String? id,
     bool? hasActiveHappyDeal,
     double? discountedPrice,
     double? discountPercentage,
@@ -103,7 +104,7 @@ class Product {
     DateTime? happyDealEndDate,
   }) {
     return Product(
-      id: id,
+      id: this.id,
       name: name,
       description: description,
       price: price,

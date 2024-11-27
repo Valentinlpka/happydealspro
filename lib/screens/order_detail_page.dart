@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:happy_deals_pro/classes/order.dart';
-import 'package:happy_deals_pro/providers/conversation_provider.dart';
-import 'package:happy_deals_pro/screens/conversation.detail.dart';
+import 'package:happy_deals_pro/providers/conversation_provider_pro.dart';
+import 'package:happy_deals_pro/screens/conversation.detail_pro.dart';
 import 'package:happy_deals_pro/services/order_service.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';

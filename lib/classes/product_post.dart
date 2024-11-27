@@ -43,7 +43,7 @@ class ProductPost extends Post {
 
   factory ProductPost.fromProduct(Product product) {
     return ProductPost(
-      id: FirebaseFirestore.instance.collection('posts').doc().id,
+      id: product.id, // Utiliser l'ID du produit
       name: product.name,
       description: product.description,
       price: product.price,
@@ -51,9 +51,7 @@ class ProductPost extends Post {
       images: product.images,
       stock: product.stock,
       isActive: product.isActive,
-      productId: product.id.isNotEmpty
-          ? product.id
-          : 'temp_id', // Gérer le cas où l'ID n'est pas encore défini
+      productId: product.id, // Utiliser le même ID
       sellerId: product.sellerId,
       companyId: product.sellerId,
       timestamp: DateTime.now(),
@@ -66,7 +64,7 @@ class ProductPost extends Post {
 // Ajouter une méthode spécifique pour créer un ProductPost avec un ID de produit spécifique
   static ProductPost fromProductWithId(Product product, String productId) {
     return ProductPost(
-      id: FirebaseFirestore.instance.collection('posts').doc().id,
+      id: product.id,
       name: product.name,
       description: product.description,
       price: product.price,

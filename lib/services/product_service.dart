@@ -39,31 +39,49 @@ class ProductService {
   Future<void> createProduct(Product product) async {
     try {
       // Appeler la Cloud Function pour créer le produit
-      final result =
-          await _functions.httpsCallable('createProduct').call(product.toMap());
-
-      // Récupérer l'ID du produit créé
-      final String productId = result.data['productId'];
-
-      // Créer le ProductPost avec le bon ID de produit
-      final productPost = ProductPost.fromProductWithId(product, productId);
-
-      // Utiliser une transaction pour s'assurer que les deux opérations réussissent
-      await _firestore.runTransaction((transaction) async {
-        // Vérifier que le produit a bien été créé
-        final productDoc = await transaction
-            .get(_firestore.collection('products').doc(productId));
-
-        if (!productDoc.exists) {
-          throw Exception('Le produit n\'a pas été créé correctement');
-        }
-
-        // Créer le post associé
-        transaction.set(
-          _firestore.collection('posts').doc(productPost.id),
-          productPost.toMap(),
-        );
+      final result = await _functions.httpsCallable('createProduct').call({
+        'name': product.name,
+        'description': product.description,
+        'price': product.price,
+        'tva': product.tva,
+        'images': product.images,
+        'stock': product.stock,
+        'isActive': product.isActive,
+        'sellerId': userUid,
       });
+
+      if (result.data != null && result.data['productId'] != null) {
+        final String productId = result.data['productId'];
+        print('Product ID reçu: $productId'); // Debug log
+
+        // Créer un nouveau Product avec l'ID reçu
+        final newProduct = Product(
+          id: productId,
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          tva: product.tva,
+          images: product.images,
+          stock: product.stock,
+          isActive: product.isActive,
+          sellerId: userUid!,
+          merchantId: userUid!,
+          stripeProductId: result.data['stripeProductId'] ?? '',
+          stripePriceId: result.data['stripePriceId'] ?? '',
+        );
+
+        // Créer le post avec le même ID
+        final productPost = ProductPost.fromProduct(newProduct);
+        print('Post ID créé: ${productPost.id}'); // Debug log
+
+        // Créer le post dans Firestore
+        await _firestore
+            .collection('posts')
+            .doc(productId) // Utiliser le même ID que le produit
+            .set(productPost.toMap());
+      } else {
+        throw Exception('Pas d\'ID de produit reçu de la Cloud Function');
+      }
     } catch (e) {
       print('Error creating product: $e');
       rethrow;

@@ -5,6 +5,8 @@ import 'package:happy_deals_pro/widgets/forms/form_deal_express.dart';
 import 'package:happy_deals_pro/widgets/forms/form_event.dart';
 import 'package:happy_deals_pro/widgets/forms/form_happy_deal.dart';
 import 'package:happy_deals_pro/widgets/forms/form_job_offer.dart';
+import 'package:happy_deals_pro/widgets/forms/form_news.dart';
+import 'package:happy_deals_pro/widgets/forms/form_promo_code.dart';
 import 'package:happy_deals_pro/widgets/forms/form_referral.dart';
 
 class AddPost extends StatefulWidget {
@@ -30,12 +32,34 @@ class _AddPostState extends State<AddPost> {
               children: [
                 _buildOption(
                   icon: Icons.add_business_outlined,
+                  title: 'Post',
+                  isSelected: _selectedOption == 'Post',
+                  onTap: () {
+                    setState(() {
+                      _selectedOption = 'Post';
+                      _currentForm = const FormNews();
+                    });
+                  },
+                ),
+                _buildOption(
+                  icon: Icons.add_business_outlined,
                   title: 'Produit',
                   isSelected: _selectedOption == 'Produit',
                   onTap: () {
                     setState(() {
                       _selectedOption = 'Produit';
                       _currentForm = const ProductFormScreen();
+                    });
+                  },
+                ),
+                _buildOption(
+                  icon: Icons.add_business_outlined,
+                  title: 'Code Promo',
+                  isSelected: _selectedOption == 'Code Promo',
+                  onTap: () {
+                    setState(() {
+                      _selectedOption = 'Code Promo';
+                      _currentForm = const PromoCodeForm();
                     });
                   },
                 ),

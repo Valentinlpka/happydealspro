@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:happy_deals_pro/classes/dealexpress.dart';
@@ -171,101 +172,128 @@ class _FormExpressDealState extends State<FormExpressDeal> {
   }
 
   Future<void> _saveExpressDeal() async {
-    if (_formKey.currentState!.validate()) {
-      showDialog(
-        context: context,
-        builder: (context) => const Center(child: CircularProgressIndicator()),
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_pickupTimes.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Veuillez ajouter au moins un créneau de retrait')),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final userId = FirebaseAuth.instance.currentUser;
+      if (userId == null) throw Exception("Utilisateur non authentifié");
+
+      // Récupérer l'ID Stripe de l'utilisateur
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId.uid)
+          .get();
+
+      if (!userDoc.exists) throw Exception("Document utilisateur non trouvé");
+
+      final userData = userDoc.data() as Map<String, dynamic>;
+      final stripeAccountId = userData['stripeAccountId'] as String?;
+      if (stripeAccountId == null) {
+        throw Exception("ID de compte Stripe non trouvé pour cet utilisateur");
+      }
+
+      // ID du document Firestore
+      final expressDealId = isEditing
+          ? widget.expressDeal!.id
+          : FirebaseFirestore.instance.collection('posts').doc().id;
+
+      // Créer ou mettre à jour sur Stripe via Cloud Functions
+      final functions = FirebaseFunctions.instance;
+      Map<String, dynamic>? stripeData;
+
+      if (isEditing) {
+        final result = await functions.httpsCallable('updateExpressDeal').call({
+          'stripeProductId': widget.expressDeal!.stripeProductId,
+          'stripePriceId': widget.expressDeal!.stripePriceId,
+          'title': _basketTypeController.text,
+          'content': _contentController.text,
+          'basketCount': int.parse(_basketCountController.text),
+          'price': int.parse(_priceController.text),
+          'pickupTimes':
+              _pickupTimes.map((dt) => dt.toIso8601String()).toList(),
+          'priceChanged':
+              widget.expressDeal!.price != int.parse(_priceController.text),
+        });
+        stripeData = result.data as Map<String, dynamic>;
+      } else {
+        final result = await functions.httpsCallable('createExpressDeal').call({
+          'title': _basketTypeController.text,
+          'content': _contentController.text,
+          'basketCount': int.parse(_basketCountController.text),
+          'price': int.parse(_priceController.text),
+          'pickupTimes':
+              _pickupTimes.map((dt) => dt.toIso8601String()).toList(),
+        });
+        stripeData = result.data as Map<String, dynamic>;
+      }
+
+      // Créer l'objet ExpressDeal avec les IDs Stripe
+      final expressDeal = ExpressDeal(
+        id: expressDealId,
+        timestamp: DateTime.now(),
+        title: _basketTypeController.text,
+        searchText: normalizeText(_basketTypeController.text),
+        pickupTimes: _pickupTimes,
+        content: _contentController.text,
+        companyId: userId.uid,
+        basketCount: int.parse(_basketCountController.text),
+        price: int.parse(_priceController.text),
+        stripeAccountId: stripeAccountId,
+        stripeProductId: stripeData['stripeProductId'],
+        stripePriceId:
+            stripeData['stripePriceId'] ?? widget.expressDeal?.stripePriceId,
       );
 
-      try {
-        User? userId = FirebaseAuth.instance.currentUser;
-        if (userId == null) {
-          throw Exception("Utilisateur non authentifié");
-        }
-
-        if (_pickupTimes.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content:
-                    Text('Veuillez ajouter au moins un créneau de retrait')),
-          );
-          return;
-        }
-
-        // Récupérer l'ID Stripe de l'utilisateur
-        DocumentSnapshot userDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(userId.uid)
-            .get();
-
-        if (!userDoc.exists) {
-          throw Exception("Document utilisateur non trouvé");
-        }
-
-        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
-        String? stripeAccountId = userData['stripeAccountId'] as String?;
-
-        if (stripeAccountId == null) {
-          throw Exception(
-              "ID de compte Stripe non trouvé pour cet utilisateur");
-        }
-
-        String expressDealId = isEditing
-            ? widget.expressDeal!.id
-            : FirebaseFirestore.instance.collection('posts').doc().id;
-
-        ExpressDeal expressDeal = ExpressDeal(
-          id: expressDealId,
-          timestamp: DateTime.now(),
-          title: _basketTypeController.text,
-          searchText: normalizeText(_basketTypeController.text),
-          pickupTimes: _pickupTimes,
-          content: _contentController.text,
-          companyId: userId.uid,
-          basketCount: int.parse(_basketCountController.text),
-          price: int.parse(_priceController.text),
-          stripeAccountId: stripeAccountId,
-        );
-
-        if (isEditing) {
-          await FirebaseFirestore.instance
-              .collection('posts')
-              .doc(expressDealId)
-              .update(expressDeal.toEditableMap());
-        } else {
-          await FirebaseFirestore.instance
-              .collection('posts')
-              .doc(expressDealId)
-              .set(expressDeal.toMap());
-        }
-
-        Navigator.of(context).pop();
-
-        toastification.show(
-          context: context,
-          type: ToastificationType.success,
-          style: ToastificationStyle.flat,
-          autoCloseDuration: const Duration(seconds: 10),
-          title: Text(
-            isEditing
-                ? 'Express Deal modifié avec succès!'
-                : 'Express Deal ajouté avec succès!',
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
-        );
-
-        if (isEditing) {
-          Navigator.of(context).pop();
-        }
-      } catch (e) {
-        Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur lors de l\'opération: $e')),
-        );
+      // Sauvegarder dans Firestore
+      if (isEditing) {
+        await FirebaseFirestore.instance
+            .collection('posts')
+            .doc(expressDealId)
+            .update(expressDeal.toEditableMap());
+      } else {
+        await FirebaseFirestore.instance
+            .collection('posts')
+            .doc(expressDealId)
+            .set(expressDeal.toMap());
       }
+
+      Navigator.of(context).pop(); // Fermer le dialogue de chargement
+
+      // Afficher le message de succès
+      toastification.show(
+        context: context,
+        type: ToastificationType.success,
+        style: ToastificationStyle.flat,
+        autoCloseDuration: const Duration(seconds: 5),
+        title: Text(
+          isEditing
+              ? 'Express Deal modifié avec succès!'
+              : 'Express Deal ajouté avec succès!',
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+      );
+
+      if (isEditing) {
+        Navigator.of(context).pop(); // Retourner à l'écran précédent
+      }
+    } catch (e) {
+      Navigator.of(context).pop(); // Fermer le dialogue de chargement
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur lors de l\'opération: $e')),
+      );
     }
   }
 

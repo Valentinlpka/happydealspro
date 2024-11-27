@@ -5,8 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:happy_deals_pro/firebase_options.dart';
 import 'package:happy_deals_pro/providers/auth_provider.dart';
 import 'package:happy_deals_pro/providers/company_provider.dart';
-import 'package:happy_deals_pro/providers/conversation_provider.dart';
+import 'package:happy_deals_pro/providers/conversation_provider_pro.dart';
 import 'package:happy_deals_pro/screens/auth/login_or_register.dart';
+import 'package:happy_deals_pro/screens/conversation.detail_pro.dart';
 import 'package:happy_deals_pro/screens/home_page.dart';
 import 'package:happy_deals_pro/widgets/forms/form_company.dart';
 import 'package:happy_deals_pro/widgets/ticket_service.dart';
@@ -52,6 +53,23 @@ class MyApp extends StatelessWidget {
       supportedLocales: const [Locale('fr', 'FR')],
       debugShowCheckedModeBanner: false,
       home: const AuthWrapper(),
+      onGenerateRoute: (settings) {
+        if (settings.name == '/conversation') {
+          final args = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
+            builder: (context) => ConversationDetailScreen(
+              conversationId: args['conversationId'] as String,
+              otherUserName: args['otherUserName'] as String,
+            ),
+          );
+        }
+        // Si la route n'est pas trouvée
+        return MaterialPageRoute(
+          builder: (context) => const Scaffold(
+            body: Center(child: Text('Page non trouvée')),
+          ),
+        );
+      },
     );
   }
 }

@@ -6,7 +6,7 @@ import 'package:happy_deals_pro/providers/company_provider.dart';
 import 'package:happy_deals_pro/screens/add_post_page.dart';
 import 'package:happy_deals_pro/screens/company_balance_page.dart';
 import 'package:happy_deals_pro/screens/contest_page.dart';
-import 'package:happy_deals_pro/screens/conversation_list_page.dart';
+import 'package:happy_deals_pro/screens/conversation_list_page_pro.dart';
 import 'package:happy_deals_pro/screens/create_promo_code_page.dart';
 import 'package:happy_deals_pro/screens/cvtheque_page.dart';
 import 'package:happy_deals_pro/screens/dashboard_page.dart';

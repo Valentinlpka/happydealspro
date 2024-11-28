@@ -65,6 +65,8 @@ dependencies:
   flutter_quill: ^10.5.14
   flutter_typeahead: ^5.2.0
   flutter_google_places_hoc081098: ^1.0.0-nullsafety.1
+  syncfusion_flutter_calendar: ^27.2.4
+  timezone: ^0.9.4
 
 dev_dependencies:
   flutter_test:
@@ -91,6 +93,7 @@ flutter:
   assets:
     - assets/images/logo.png
     - packages/flutter_google_places/assets/google_white.png
+    - packages/timezone/data/latest_all.tzf
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

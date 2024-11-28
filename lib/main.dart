@@ -14,9 +14,12 @@ import 'package:happy_deals_pro/widgets/ticket_service.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:timeago/timeago.dart' as timeago_fr;
+import 'package:timezone/data/latest_all.dart' as tz;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  tz.initializeTimeZones();
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   timeago.setLocaleMessages('fr', timeago_fr.FrMessages());
 

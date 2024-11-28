@@ -17,12 +17,16 @@ import 'package:happy_deals_pro/screens/happy_deals_page.dart';
 import 'package:happy_deals_pro/screens/job_offer_page.dart';
 import 'package:happy_deals_pro/screens/order_deal_express.dart';
 import 'package:happy_deals_pro/screens/order_list_page.dart';
+import 'package:happy_deals_pro/screens/planning_page.dart';
 import 'package:happy_deals_pro/screens/pro_referral_page.dart';
 import 'package:happy_deals_pro/screens/product_form_page.dart';
 import 'package:happy_deals_pro/screens/product_management_page.dart';
 import 'package:happy_deals_pro/screens/referral_page.dart';
+import 'package:happy_deals_pro/screens/service_management_page.dart';
 import 'package:happy_deals_pro/screens/shop_page.dart';
+import 'package:happy_deals_pro/screens/time_slot_management_page.dart';
 import 'package:happy_deals_pro/widgets/forms/form_company.dart';
+import 'package:happy_deals_pro/widgets/forms/form_service.dart';
 import 'package:happy_deals_pro/widgets/notification_bell.dart';
 import 'package:provider/provider.dart';
 
@@ -103,6 +107,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
               title: 'Créer un code promo ',
               icon: Icons.flash_on,
               page: const CreatePromoCodeScreen()),
+        ],
+      ),
+      MenuItem(
+        title: 'Services & Réservations',
+        icon: Icons.spa,
+        page: const SizedBox(),
+        subItems: [
+          MenuItem(
+            title: 'Ajouter un service',
+            icon: Icons.add_circle_outline,
+            page: ServiceFormScreen(
+              professionalId: userUid, // Ajouté
+              service: null, // Ajouté
+              onServiceSaved: () {},
+            ),
+          ),
+          MenuItem(
+            title: 'Gestion des services',
+            icon: Icons.spa_outlined,
+            page: ServiceManagementPage(professionalId: userUid),
+          ),
+          MenuItem(
+            title: 'Planning des créneaux',
+            icon: Icons.calendar_today_outlined,
+            page: TimeSlotManagementPage(professionalId: userUid),
+          ),
+          MenuItem(
+            title: 'Planning test',
+            icon: Icons.calendar_today_outlined,
+            page: PlanningDashboardPage(professionalId: userUid),
+          ),
         ],
       ),
       MenuItem(
